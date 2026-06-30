@@ -170,4 +170,3 @@ Each developer will clone this repository, work via feature branches, push chang
 `git checkout my-feature-branch`
 `git rebase main` -- resolve any conflicts
 
-Andrew was here
