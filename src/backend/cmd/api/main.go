@@ -1,21 +1,28 @@
 package main
 
 import (
-	"context"
-	"database/sql"
-	"fmt"
+	"flag"
 	"log/slog"
 	"os"
-	"time"
+	"strings"
 
 	"github.com/michaelgov-ctrl/Ingredient-Genie-backend/internal/data"
-	"github.com/michaelgov-ctrl/Ingredient-Genie-backend/internal/validator"
 	_ "modernc.org/sqlite"
 )
 
 type config struct {
-	db struct {
+	port     int
+	logLevel string
+	db       struct {
 		dsn string
+	}
+	limiter struct {
+		rps     float64
+		burst   int
+		enabled bool
+	}
+	cors struct {
+		trustedOrigins []string
 	}
 }
 
@@ -27,7 +34,22 @@ type application struct {
 
 func main() {
 	var cfg config
-	cfg.db.dsn = "internal/data/meals.sqlite"
+
+	flag.IntVar(&cfg.port, "port", 4269, "API server port")
+	flag.StringVar(&cfg.logLevel, "log-level", "error", "Logging level (trace|debug|info|warning|error)")
+
+	flag.StringVar(&cfg.db.dsn, "dsn", "internal/data/meals.sqlite", "DSN to connect to sqlite db")
+
+	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 1, "Rate limiter maximum requests per second")
+	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 2, "Rate limiter maximum burst")
+	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
+
+	flag.Func("cors-trusted-origins", "Trusted CORS origins (space seperated)", func(val string) error {
+		cfg.cors.trustedOrigins = strings.Fields(val)
+		return nil
+	})
+
+	flag.Parse()
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
@@ -44,62 +66,8 @@ func main() {
 		models: data.NewModels(db),
 	}
 
-	app.searchMealsHandler()
-}
-
-func openDB(cfg config) (*sql.DB, error) {
-	db, err := sql.Open("sqlite", cfg.db.dsn)
-	if err != nil {
-		return nil, err
+	if err := app.serve(); err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
-
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
-
-	return db, nil
-}
-
-// starting to prep to transition to a json api
-func (app *application) searchMealsHandler( /*w http.ResponseWriter, r *http.Request*/ ) {
-	var input struct {
-		Ingredients []string
-		data.Filters
-	}
-
-	v := validator.New()
-
-	// extract necessary info like ingredients, page, page size, and sort from `r.Body`
-	input.Ingredients = []string{
-		"Garlic",
-		"Red Onions",
-		"Vegetable Oil",
-		"Lime",
-	}
-	input.Filters.Page = 1
-	input.Filters.PageSize = 10
-	input.Filters.Sort = "-ratio"
-
-	if data.ValidateIngredientSearch(v, input.Ingredients); !v.Valid() {
-		// failed validation
-		return
-	}
-
-	if data.ValidateFilters(v, input.Filters); !v.Valid() {
-		// failed validation
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	meals, metadata, err := app.models.Meals.FindByIngredients(ctx, input.Ingredients, input.Filters)
-	if err != nil {
-		// return err
-		return
-	}
-
-	// write the response
-
-	fmt.Println(metadata, len(meals), "\n", meals[len(meals)-1])
 }
