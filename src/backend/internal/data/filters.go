@@ -5,9 +5,9 @@ import (
 )
 
 type Filters struct {
-	Page     int
-	PageSize int
-	Sort     string
+	Page     int    `json:"page"`
+	PageSize int    `json:"pageSize"`
+	Sort     string `json:"sort"`
 }
 
 func ValidateFilters(v *validator.Validator, f Filters) {
