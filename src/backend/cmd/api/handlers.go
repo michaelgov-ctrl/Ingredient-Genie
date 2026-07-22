@@ -22,6 +22,19 @@ func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+func (app *application) searchMealsSortTypesHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: this is probably a good reason sort options should be enums..
+	sortTypes, i := make([]string, len(data.MealSortStmts)), 0
+	for k := range data.MealSortStmts {
+		sortTypes[i] = k
+		i++
+	}
+
+	if err := app.writeJSON(w, http.StatusOK, envelope{"sortTypes": sortTypes}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
 func (app *application) searchMealsByIngredientsHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Ingredients  []string `json:"ingredients"`

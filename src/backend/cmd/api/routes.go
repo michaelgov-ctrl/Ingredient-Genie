@@ -25,6 +25,7 @@ import (
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /v1/healthcheck", app.healthcheckHandler)
+	mux.HandleFunc("GET /v1/meals/search/sort", app.searchMealsSortTypesHandler)
 	mux.HandleFunc("POST /v1/meals/search", app.searchMealsByIngredientsHandler)
 
 	return app.recoverPanic(app.enableCORS(app.logRequest(app.rateLimit(mux))))

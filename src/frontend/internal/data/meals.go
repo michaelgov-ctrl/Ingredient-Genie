@@ -11,17 +11,19 @@ import (
 
 // TODO: some kind of validation on addr
 type MealsClient struct {
-	logger             *slog.Logger
-	addr               string
-	mealSearchEndpoint string
-	httpClient         *http.Client
+	logger                      *slog.Logger
+	addr                        string
+	mealSearchEndpoint          string
+	mealSearchSortTypesEndpoint string
+	httpClient                  *http.Client
 }
 
 func NewMealsClient(logger *slog.Logger, addr string) MealsClient {
 	client := MealsClient{
-		logger:             logger,
-		addr:               addr,
-		mealSearchEndpoint: "/v1/meals/search",
+		logger:                      logger,
+		addr:                        addr,
+		mealSearchEndpoint:          "/v1/meals/search",
+		mealSearchSortTypesEndpoint: "/v1/meals/search/sort",
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
@@ -34,9 +36,34 @@ func NewMealsClient(logger *slog.Logger, addr string) MealsClient {
 	return client
 }
 
-func (mc MealsClient) GetFilters() ([]FilterType, error) {
+func (mc MealsClient) GetSortTypes() ([]SortType, error) {
 	// TODO: get filter typess from the backend, gotta add that to the backend...
-	return []FilterType{}, nil
+	req, err := http.NewRequest(http.MethodGet, mc.addr+mc.mealSearchSortTypesEndpoint, nil)
+	if err != nil {
+		return []SortType{}, err
+	}
+
+	req.Header.Add("Accept", "application/json")
+
+	resp, err := mc.httpClient.Do(req)
+	if err != nil {
+		return []SortType{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return []SortType{}, fmt.Errorf("failed to enumerate sort types with http status code: %d", resp.StatusCode)
+	}
+
+	var Response struct {
+		SortTypes []SortType `json:"sortTypes"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&Response); err != nil {
+		return []SortType{}, err
+	}
+
+	return Response.SortTypes, nil
 }
 
 func (mc MealsClient) SearchByIngredients(body IngredientMealSearchRequest) ([]MealResponse, Metadata, error) {
