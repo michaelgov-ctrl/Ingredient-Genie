@@ -20,16 +20,15 @@ func NewModels(logger *slog.Logger, mealApiAddr net.Addr) Models {
 }
 
 type MealResponse struct {
-	Meal                   Meal    `json:"meal"`
-	MatchedIngredientCount int64   `json:"matchedIngredientCount"`
-	TotalIngredientCount   int64   `json:"totalIngredientCount"`
-	MissingIngredientCount int64   `json:"missingIngredientCount"`
-	MatchRatio             float64 `json:"matchRatio"`
+	Meal                   Meal     `json:"meal"`
+	MissingIngredients     []string `json:"missingIngredients"`
+	MatchedIngredientCount int64    `json:"matchedIngredientCount"`
+	TotalIngredientCount   int64    `json:"totalIngredientCount"`
+	MatchRatio             float64  `json:"matchRatio"`
 }
 
 type Meal struct {
 	ID            int64  `json:"id"`
-	MealDBID      int64  `json:"mealDbId"`
 	Name          string `json:"name"`
 	AlternateName string `json:"alternateName"`
 	Category      string `json:"category"`
