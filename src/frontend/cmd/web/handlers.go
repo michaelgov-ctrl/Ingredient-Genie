@@ -9,6 +9,15 @@ import (
 )
 
 func (app *application) searchMealsByIngredientsHandler(w http.ResponseWriter, r *http.Request) {
+	// gather sort types to populate form..
+	sortTypes, err := app.models.Meals.GetSortTypes()
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return
+	}
+
+	fmt.Println(sortTypes)
+
 	// TODO: provide a pretty form to actually process user input for a request
 	req := data.IngredientMealSearchRequest{
 		Ingredients: []string{"Garlic"},

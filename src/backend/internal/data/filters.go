@@ -16,11 +16,12 @@ func ValidateFilters(v *validator.Validator, f Filters) {
 	v.Check(f.PageSize > 0, "page_size", "must be greater than 0")
 	v.Check(f.PageSize <= 10, "page_size", "must be less than or equal to 10")
 
-	_, validSort := mealSortStmts[f.Sort]
+	_, validSort := MealSortStmts[f.Sort]
 	v.Check(validSort, "sort", "invalid sort value")
 }
 
-var mealSortStmts = map[string]string{
+// TODO: should these be enums?? but it generates a lot of boilerplate..
+var MealSortStmts = map[string]string{
 	"id":     "MealId ASC",
 	"-id":    "MealId DESC",
 	"ratio":  "MatchRatio ASC, MealId ASC",
@@ -30,7 +31,7 @@ var mealSortStmts = map[string]string{
 }
 
 func (f Filters) orderBy() string {
-	expression, ok := mealSortStmts[f.Sort]
+	expression, ok := MealSortStmts[f.Sort]
 	if !ok {
 		panic("unsafe sort parameter: " + f.Sort)
 	}

@@ -5,7 +5,7 @@ import (
 )
 
 type MealsApi interface {
-	GetFilters() ([]FilterType, error)
+	GetSortTypes() ([]SortType, error)
 	SearchByIngredients(IngredientMealSearchRequest) ([]MealResponse, Metadata, error)
 }
 
