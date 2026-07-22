@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"log/slog"
-	"net"
 	"os"
 
 	"github.com/michaelgov-ctrl/Ingredient-Genie-frontend/internal/data"
@@ -33,16 +32,10 @@ func main() {
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	addr, err := net.ResolveIPAddr("ip", cfg.mealsApiUri)
-	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
-	}
-
 	app := &application{
 		config: cfg,
 		logger: logger,
-		models: data.NewModels(logger, addr),
+		models: data.NewModels(logger, cfg.mealsApiUri),
 	}
 
 	if err := app.serve(); err != nil {

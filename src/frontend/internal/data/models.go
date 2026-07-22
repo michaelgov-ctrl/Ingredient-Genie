@@ -2,20 +2,20 @@ package data
 
 import (
 	"log/slog"
-	"net"
 )
 
 type MealsApi interface {
-	SearchByIngredients() (MealResponse, Metadata, error)
+	GetFilters() ([]FilterType, error)
+	SearchByIngredients(IngredientMealSearchRequest) ([]MealResponse, Metadata, error)
 }
 
 type Models struct {
-	MealsApi MealsApi
+	Meals MealsApi
 }
 
-func NewModels(logger *slog.Logger, mealApiAddr net.Addr) Models {
+func NewModels(logger *slog.Logger, mealApiAddr string) Models {
 	return Models{
-		MealsApi: NewMealsApiClient(logger, mealApiAddr),
+		Meals: NewMealsClient(logger, mealApiAddr),
 	}
 }
 
@@ -28,16 +28,24 @@ type MealResponse struct {
 }
 
 type Meal struct {
-	ID            int64  `json:"id"`
-	Name          string `json:"name"`
-	AlternateName string `json:"alternateName"`
-	Category      string `json:"category"`
-	Area          string `json:"area"`
-	Country       string `json:"country"`
-	Instructions  string `json:"instructions"`
-	ThumbnailUrl  string `json:"thumbnailUrl"`
-	YoutubeUrl    string `json:"youtubeUrl"`
-	SourceUrl     string `json:"sourceUrl"`
+	ID            int64            `json:"id"`
+	Name          string           `json:"name"`
+	AlternateName string           `json:"alternateName"`
+	Category      string           `json:"category"`
+	Area          string           `json:"area"`
+	Country       string           `json:"country"`
+	Instructions  string           `json:"instructions"`
+	ThumbnailURL  string           `json:"thumbnailUrl"`
+	YoutubeURL    string           `json:"youtubeUrl"`
+	SourceURL     string           `json:"sourceUrl"`
+	Ingredients   []MealIngredient `json:"ingredients"`
+}
+
+type MealIngredient struct {
+	IngredientID int64  `json:"ingredientId"`
+	Name         string `json:"name"`
+	Position     int64  `json:"position"`
+	MeasureText  string `json:"measureText"`
 }
 
 type Metadata struct {
@@ -46,4 +54,9 @@ type Metadata struct {
 	FirstPage    int `json:"first_page"`
 	LastPage     int `json:"last_page"`
 	TotalRecords int `json:"total_records"`
+}
+
+type IngredientMealSearchRequest struct {
+	Ingredients []string `json:"ingredients"`
+	Filters     Filters  `json:"filters"`
 }
