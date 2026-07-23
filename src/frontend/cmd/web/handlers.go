@@ -5,16 +5,35 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 
 	"github.com/michaelgov-ctrl/Ingredient-Genie-frontend/internal/data"
 	"github.com/michaelgov-ctrl/Ingredient-Genie-frontend/internal/validator"
 )
 
+const (
+	defaultMealSearchPageSize = 9
+	defaultMealSearchSort     = "-ratio"
+)
+
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
+	page := 1
+	pageSize := 18
+
+	page, err := lazyDefault(r, "page", page)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	pageSize, err = lazyDefault(r, "pageSize", pageSize)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
 	resp, err := app.models.Meals.GetMealList(data.Filters{
-		Page:     1,
-		PageSize: 20,
+		Page:     page,
+		PageSize: pageSize,
 		Sort:     "name",
 	})
 	if err != nil {
@@ -22,11 +41,11 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := app.newTemplateData(r)
-	data.Meals = resp.Meals
-	data.Metadata = resp.Metadata
+	templateData := app.newTemplateData(r)
+	templateData.Meals = resp.Meals
+	templateData.Metadata = resp.Metadata
 
-	app.render(w, r, http.StatusOK, "home.tmpl.html", data)
+	app.render(w, r, http.StatusOK, "home.tmpl.html", templateData)
 }
 
 func (app *application) mealView(w http.ResponseWriter, r *http.Request) {
@@ -71,22 +90,11 @@ func (app *application) searchMealsByIngredients(w http.ResponseWriter, r *http.
 	// defaults
 	form := mealSearchForm{
 		Page:     1,
-		PageSize: 10,
-		Sort:     "-ratio",
+		PageSize: defaultMealSearchPageSize,
+		Sort:     defaultMealSearchSort,
 	}
 
 	query := r.URL.Query()
-
-	// first visit
-	if len(query) == 0 {
-		templateData := app.newTemplateData(r)
-		templateData.Form = form
-		templateData.SortTypes = sortTypes
-
-		app.render(w, r, http.StatusOK, "ingredientsearch.tmpl.html", templateData)
-
-		return
-	}
 
 	form.Ingredients = normalizeIngredients(query["ingredients"])
 
@@ -110,17 +118,23 @@ func (app *application) searchMealsByIngredients(w http.ResponseWriter, r *http.
 		form.Sort = value
 	}
 
-	form.CheckField(validator.NotEmpty(form.Ingredients), "ingredients", "At least one ingredient must be provided")
+	templateData := app.newTemplateData(r)
+	templateData.Form = form
+	templateData.SortTypes = sortTypes
+
+	// first visit base case.
+	if len(form.Ingredients) == 0 {
+		app.render(w, r, http.StatusOK, "ingredientsearch.tmpl.html", templateData)
+		return
+	}
+
 	form.CheckField(form.Page >= 1, "page", "Page must be greater than zero")
 	form.CheckField(form.PageSize >= 1 && form.PageSize <= 100, "pagesize", "Page size must be between 1 and 100")
 
 	if !form.Valid() {
-		templateData := app.newTemplateData(r)
 		templateData.Form = form
-		templateData.SortTypes = sortTypes
 
 		app.render(w, r, http.StatusUnprocessableEntity, "ingredientsearch.tmpl.html", templateData)
-
 		return
 	}
 
@@ -139,9 +153,6 @@ func (app *application) searchMealsByIngredients(w http.ResponseWriter, r *http.
 		return
 	}
 
-	templateData := app.newTemplateData(r)
-	templateData.Form = form
-	templateData.SortTypes = sortTypes
 	templateData.MealMatches = resp.MealMatches
 	templateData.Metadata = resp.Metadata
 
@@ -160,11 +171,11 @@ func (app *application) searchMealsByIngredientsPost(w http.ResponseWriter, r *h
 	form.Ingredients = normalizeIngredients(form.Ingredients)
 
 	if form.PageSize == 0 {
-		form.PageSize = 10
+		form.PageSize = defaultMealSearchPageSize
 	}
 
 	if form.Sort == "" {
-		form.Sort = "-ratio"
+		form.Sort = defaultMealSearchSort
 	}
 
 	// A new search always starts on page 1.
@@ -200,30 +211,4 @@ func (app *application) searchMealsByIngredientsPost(w http.ResponseWriter, r *h
 	query.Set("sort", form.Sort)
 
 	http.Redirect(w, r, "/meal/search?"+query.Encode(), http.StatusSeeOther)
-}
-
-// This could just be done by the backend...
-// But frontend validation is kind, even if redundant maybe
-func normalizeIngredients(ingredients []string) []string {
-	normalized := make([]string, 0, len(ingredients))
-	seen := make(map[string]struct{}, len(ingredients))
-
-	for _, ingredient := range ingredients {
-		ingredient = strings.TrimSpace(ingredient)
-
-		if ingredient == "" {
-			continue
-		}
-
-		key := strings.ToLower(ingredient)
-
-		if _, exists := seen[key]; exists {
-			continue
-		}
-
-		seen[key] = struct{}{}
-		normalized = append(normalized, ingredient)
-	}
-
-	return normalized
 }

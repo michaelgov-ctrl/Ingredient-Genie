@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/go-playground/form/v4"
 	"github.com/justinas/nosurf"
@@ -67,4 +69,39 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 	}
 
 	return nil
+}
+
+func lazyDefault(r *http.Request, key string, defaultValue int) (int, error) {
+	value := r.URL.Query().Get(key)
+	if value == "" {
+		return defaultValue, nil
+	}
+
+	return strconv.Atoi(value)
+}
+
+// This could just be done by the backend...
+// But frontend validation is kind, even if redundant maybe
+func normalizeIngredients(ingredients []string) []string {
+	normalized := make([]string, 0, len(ingredients))
+	seen := make(map[string]struct{}, len(ingredients))
+
+	for _, ingredient := range ingredients {
+		ingredient = strings.TrimSpace(ingredient)
+
+		if ingredient == "" {
+			continue
+		}
+
+		key := strings.ToLower(ingredient)
+
+		if _, exists := seen[key]; exists {
+			continue
+		}
+
+		seen[key] = struct{}{}
+		normalized = append(normalized, ingredient)
+	}
+
+	return normalized
 }

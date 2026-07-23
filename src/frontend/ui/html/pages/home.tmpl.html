@@ -1,41 +1,58 @@
-{{define "title"}}Home{{end}}
+{{define "title"}}Browse Meals{{end}}
 
 {{define "main"}}
-    <h2>Please peruse our meals</h2>
+<section class="meal-browser">
+    <div class="browse-header">
+        <header class="page-header">
+            <h1>Browse Meals</h1>
+            <p>Explore recipes and find something new to cook.</p>
+        </header>
+        {{if .Meals}}
+            {{with .Metadata}}
+            <div class="pagination-container">
+                <nav class="pagination" aria-label="Meal pages">
+                    {{if gt .CurrentPage .FirstPage}}
+                        <a href="/?page={{previousPage .CurrentPage}}&pageSize={{.PageSize}}">
+                            Previous
+                        </a>
+                    {{end}}
+                    <span>
+                        Page {{.CurrentPage}} of {{.LastPage}}
+                    </span>
+                    {{if lt .CurrentPage .LastPage}}
+                        <a href="/?page={{nextPage .CurrentPage}}&pageSize={{.PageSize}}">
+                            Next
+                        </a>
+                    {{end}}
+                </nav>
+                <p class="result-count">
+                    {{.TotalRecords}} meals
+                </p>
+            </div>
+            {{end}}
+        {{end}}
+    </div>
     {{if .Meals}}
-    <table>
-        <tr>
-            <th>Title</th>
-            <th>Created</th>
-            <th>ID</th>
-        </tr>
-        {{range .Meals}}
-        <tr>
-            <td><a href='/meal/view/{{.ID}}'>{{.Title}}</a></td>
-            <td>{{humanDate .Created}}</td>
-            <td>#{{.ID}}</td>
-        </tr>
-        {{end}}
-    </table>
-    <table>
-        <tr>
-            <th>CurrentPage</th>
-            <th>PageSize</th>
-            <th>FirstPage</th>
-            <th>LastPage</th>
-            <th>TotalRecords</th>
-        </tr>
-        {{with .Metadata}}
-        <tr>
-            <td>{{.CurrentPage}}</td>
-            <td>{{.PageSize}}</td>
-            <td>{{.FirstPage}}</td>
-            <td>{{.LastPage}}</td>
-            <td>{{.TotalRecords}}</td>
-        </tr>
-        {{end}}
-    </table>
+        <div class="meal-grid">
+            {{range .Meals}}
+                <article class="meal-card">
+                    <a href="/meal/view/{{.ID}}">
+                        <h2>{{.Name}}</h2>
+                    </a>
+                    <div class="meal-card-metadata">
+                        {{with .Category}}
+                            <span>{{.}}</span>
+                        {{end}}
+                        {{with .Area}}
+                            <span>{{.}}</span>
+                        {{end}}
+                    </div>
+                </article>
+            {{end}}
+        </div>
     {{else}}
-        <p>There's nothing to see here... yet!</p>
+        <p>No meals are available.</p>
     {{end}}
+
+</section>
 {{end}}

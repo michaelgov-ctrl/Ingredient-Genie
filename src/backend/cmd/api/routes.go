@@ -26,7 +26,7 @@ func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /v1/healthcheck", app.healthcheckHandler)
 	mux.HandleFunc("POST /v1/meals/get", app.getMealHandler)
-	mux.HandleFunc("GET /v1/meals/sorts", app.mealSortTypesHandler)
+	mux.HandleFunc("GET /v1/meals/sort", app.mealSortTypesHandler)
 	mux.HandleFunc("POST /v1/meals/list", app.listMealsHandler)
 	mux.HandleFunc("POST /v1/meals/search", app.searchMealByIngredientsHandler)
 

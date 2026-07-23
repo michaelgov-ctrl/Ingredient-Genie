@@ -30,8 +30,8 @@ func NewMealsClient(logger *slog.Logger, addr string) MealsClient {
 		healthcheckEndpoint:    version + "/healthcheck",
 		mealsGetEndpoint:       version + "/meals/get",
 		mealsListEndpoint:      version + "/meals/list",
-		mealsSearchEndpoint:    version + "/meals/sorts",
-		mealsSortTypesEndpoint: version + "/meals/search",
+		mealsSearchEndpoint:    version + "/meals/search",
+		mealsSortTypesEndpoint: version + "/meals/sort",
 		httpClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},

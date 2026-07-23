@@ -40,9 +40,9 @@ func main() {
 
 	flag.StringVar(&cfg.db.dsn, "dsn", "internal/data/meals.sqlite", "DSN to connect to sqlite db")
 
-	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 1, "Rate limiter maximum requests per second")
-	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 2, "Rate limiter maximum burst")
-	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
+	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 50, "Rate limiter maximum requests per second")
+	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 100, "Rate limiter maximum burst")
+	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", false, "Enable rate limiter")
 
 	flag.Func("cors-trusted-origins", "Trusted CORS origins (space seperated)", func(val string) error {
 		cfg.cors.trustedOrigins = strings.Fields(val)

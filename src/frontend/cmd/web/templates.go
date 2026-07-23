@@ -28,8 +28,18 @@ func humanDate(t time.Time) string {
 	return t.UTC().Format("02 Jan 2006 at 15:04")
 }
 
+func previousPage(page int) int {
+	return page - 1
+}
+
+func nextPage(page int) int {
+	return page + 1
+}
+
 var functions = template.FuncMap{
-	"humanDate": humanDate,
+	"humanDate":    humanDate,
+	"previousPage": previousPage,
+	"nextPage":     nextPage,
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {

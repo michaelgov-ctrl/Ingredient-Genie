@@ -324,13 +324,7 @@ func (m *MealModel) GetAll(ctx context.Context, filters Filters) ([]Meal, Metada
 		return nil, Metadata{}, fmt.Errorf("iterate meals: %w", err)
 	}
 
-	metadata := calculateMetadata(
-		totalRecords,
-		filters.Page,
-		filters.PageSize,
-	)
-
-	return meals, metadata, nil
+	return meals, calculateMetadata(totalRecords, filters.Page, filters.PageSize), nil
 }
 
 type MealMatch struct {

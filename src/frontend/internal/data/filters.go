@@ -7,4 +7,4 @@ type Filters struct {
 }
 
 // TODO: go back to the backend sometime and make this an enum
-type SortType string
+type SortType = string

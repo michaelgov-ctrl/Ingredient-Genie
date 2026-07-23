@@ -1,29 +1,502 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-size: 18px;
-    font-family: "Ubuntu Mono", monospace;
+:root {
+    --background: #f7f8f5;
+    --surface: #ffffff;
+    --text: #20251f;
+    --muted: #687067;
+    --primary: #3f6b4f;
+    --primary-hover: #31553e;
+    --primary-light: #e7efe9;
+    --border: #dce2da;
+    --error: #a83b3b;
+    --radius: 10px;
+    --max-width: 1100px;
 }
 
-html, body {
-    height: 100%;
+/* Base */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
 body {
+    margin: 0;
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    background: var(--background);
+    color: var(--text);
+
+    font-family: "Ubuntu Mono", monospace;
     line-height: 1.5;
-    background-color: #474953;
-    color: #E4E5E7;
-    overflow-y: scroll;
 }
 
-header, nav, main, footer {
-    padding: 2px calc((100% - 800px) / 2) 0;
+a {
+    color: var(--primary);
+    text-decoration: none;
 }
+
+a:hover {
+    color: var(--primary-hover);
+}
+
+h1,
+h2,
+h3,
+p {
+    margin-top: 0;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+/* Header / navigation */
+
+body > header {
+    background: cadetblue;
+}
+
+.site-header {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.site-logo {
+    color: white;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.site-logo:hover {
+    color: orange;
+}
+
+.site-header nav {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.site-header nav a {
+    color: white;
+    font-weight: 700;
+}
+
+.site-header nav a:hover {
+    color: orange;
+}
+
+.browse-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.page-header {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.pagination-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.pagination {
+    margin-top: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.result-count {
+    margin: 0.5rem 0 0;
+    text-align: right;
+}
+
+/* Main */
 
 main {
-    margin-top: 54px;
-    margin-bottom: 54px;
-    min-height: calc(100vh - 345px);
-    overflow: auto;
+    width: 100%;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+
+    flex: 1;
+}
+
+.page-header,
+.meal-search > header {
+    margin-bottom: 2rem;
+}
+
+.page-header h1,
+.meal-search > header h1 {
+    margin-bottom: 0.4rem;
+}
+
+.page-header p,
+.meal-search > header p {
+    color: var(--muted);
+}
+
+/* Meal cards */
+
+.meal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+.meal-card {
+    padding: 1.25rem;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+
+    box-shadow: 0 2px 8px rgb(0 0 0 / 6%);
+}
+
+.meal-card:hover {
+    transform: translateY(-2px);
+}
+
+.meal-card h2,
+.meal-card h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.15rem;
+}
+
+.meal-card > a,
+.meal-card h2 a,
+.meal-card h3 a {
+    color: var(--text);
+}
+
+.meal-card > a:hover,
+.meal-card h2 a:hover,
+.meal-card h3 a:hover {
+    color: var(--primary);
+}
+
+.meal-card img {
+    width: 100%;
+    height: 190px;
+    margin-bottom: 1rem;
+
+    object-fit: cover;
+    border-radius: var(--radius);
+}
+
+.meal-card-metadata,
+.meal-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.meal-card-metadata span,
+.meal-metadata span {
+    padding: 0.25rem 0.55rem;
+
+    background: var(--primary-light);
+    color: var(--primary-hover);
+
+    border-radius: 999px;
+    font-size: 0.85rem;
+}
+
+/* Pagination */
+
+.pagination {
+    margin-top: 2rem;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+.pagination a {
+    padding: 0.5rem 0.75rem;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+
+    font-weight: 700;
+}
+
+.pagination span,
+.result-count {
+    color: var(--muted);
+}
+
+.result-count {
+    margin-top: 0.75rem;
+    text-align: center;
+}
+
+/* Search */
+
+.meal-search form {
+    max-width: 700px;
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+fieldset {
+    margin: 0 0 1.5rem;
+    padding: 0;
+    border: 0;
+}
+
+legend,
+label {
+    font-weight: 700;
+}
+
+legend {
+    margin-bottom: 0.75rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+input[type="text"],
+select {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+
+    background: var(--surface);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+input[type="text"]:focus,
+select:focus {
+    outline: 2px solid var(--primary);
+}
+
+.search-options {
+    margin: 1.5rem 0;
+
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+#ingredient-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ingredient-input {
+    width: 100%;
+}
+
+.ingredient-input input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#add-ingredient {
+    display: inline-block;
+    width: auto;
+    margin-top: 1rem;
+}
+
+button {
+    padding: 0.7rem 1.1rem;
+
+    background: var(--primary);
+    color: white;
+
+    border: 0;
+    border-radius: var(--radius);
+
+    font-weight: 700;
+    cursor: pointer;
+}
+
+button:hover {
+    background: var(--primary-hover);
+}
+
+.error {
+    margin: 0.5rem 0;
+    padding: 0.5rem 0.75rem;
+
+    background: #faeeee;
+    color: var(--error);
+
+    border-radius: var(--radius);
+}
+
+.search-results {
+    margin-top: 2rem;
+}
+
+.missing-ingredients {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+/* Meal details */
+
+.meal {
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+.meal-header {
+    margin-bottom: 2rem;
+
+    display: grid;
+    grid-template-columns: 1fr minmax(260px, 360px);
+    align-items: center;
+    gap: 2rem;
+}
+
+.meal-image {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius);
+}
+
+.meal-ingredients,
+.meal-instructions,
+.meal-links {
+    margin-top: 2rem;
+    padding: 1.5rem;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.meal-ingredients ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.meal-ingredients li {
+    padding: 0.65rem 0;
+
+    display: grid;
+    grid-template-columns: minmax(100px, 160px) 1fr;
+    gap: 1rem;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.meal-ingredients li:last-child {
+    border-bottom: 0;
+}
+
+.ingredient-measure {
+    color: var(--muted);
+}
+
+.ingredient-name {
+    font-weight: 700;
+}
+
+.meal-instructions p {
+    margin-bottom: 0;
+    white-space: pre-line;
+}
+
+.meal-links a {
+    display: inline-block;
+    margin-right: 0.5rem;
+    padding: 0.5rem 0.75rem;
+
+    background: var(--primary-light);
+    border-radius: var(--radius);
+
+    font-weight: 700;
+}
+
+/* Footer */
+
+footer {
+    padding: 1.5rem;
+
+    background: var(--surface);
+    color: var(--muted);
+
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+footer p {
+    margin: 0;
+}
+
+/* Responsive */
+
+@media (max-width: 850px) {
+    .meal-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .meal-header {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .site-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    main {
+        padding: 2rem 1rem 3rem;
+    }
+
+    .meal-grid,
+    .search-options {
+        grid-template-columns: 1fr;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+    }
+
+    .meal-ingredients li {
+        grid-template-columns: 1fr;
+        gap: 0.15rem;
+    }
 }

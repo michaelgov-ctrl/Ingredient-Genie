@@ -11,6 +11,7 @@ func (app *application) routes() http.Handler {
 
 	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
 
+	// TODO: create meal endpoint
 	mux.HandleFunc("GET /{$}", app.home)
 	mux.HandleFunc("GET /meal/view/{id}", app.mealView)
 	mux.HandleFunc("GET /meal/search", app.searchMealsByIngredients)

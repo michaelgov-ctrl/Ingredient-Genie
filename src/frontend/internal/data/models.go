@@ -51,11 +51,11 @@ type MealIngredient struct {
 }
 
 type Metadata struct {
-	CurrentPage  int `json:"current_page"`
-	PageSize     int `json:"page_size"`
-	FirstPage    int `json:"first_page"`
-	LastPage     int `json:"last_page"`
-	TotalRecords int `json:"total_records"`
+	CurrentPage  int `json:"currentPage"`
+	PageSize     int `json:"pageSize"`
+	FirstPage    int `json:"firstPage"`
+	LastPage     int `json:"lastPage"`
+	TotalRecords int `json:"totalRecords"`
 }
 
 type IngredientMealSearchRequest struct {
