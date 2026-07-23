@@ -1,0 +1,41 @@
+{{define "title"}}Home{{end}}
+
+{{define "main"}}
+    <h2>Please peruse our meals</h2>
+    {{if .Meals}}
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Created</th>
+            <th>ID</th>
+        </tr>
+        {{range .Meals}}
+        <tr>
+            <td><a href='/meal/view/{{.ID}}'>{{.Title}}</a></td>
+            <td>{{humanDate .Created}}</td>
+            <td>#{{.ID}}</td>
+        </tr>
+        {{end}}
+    </table>
+    <table>
+        <tr>
+            <th>CurrentPage</th>
+            <th>PageSize</th>
+            <th>FirstPage</th>
+            <th>LastPage</th>
+            <th>TotalRecords</th>
+        </tr>
+        {{with .Metadata}}
+        <tr>
+            <td>{{.CurrentPage}}</td>
+            <td>{{.PageSize}}</td>
+            <td>{{.FirstPage}}</td>
+            <td>{{.LastPage}}</td>
+            <td>{{.TotalRecords}}</td>
+        </tr>
+        {{end}}
+    </table>
+    {{else}}
+        <p>There's nothing to see here... yet!</p>
+    {{end}}
+{{end}}

@@ -1,0 +1,31 @@
+{{define "title"}}Create a New Meal{{end}}
+
+{{define "main"}}
+<form action='/meal/create' method='POST' enctype='multipart/form-data' id='create_meal_form'>
+    <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
+    <div>
+        <label>Title:</label>
+        {{with .Form.FieldErrors.title}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <input type='text' name='title' value='{{.Form.Title}}' required>
+    </div>
+    <div>
+        <label>Artist:</label>
+        {{with .Form.FieldErrors.artist}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <input type='text' name='artist' value='{{.Form.Artist}}' required>
+    </div>
+    <div>
+        <label>Image File:</label>
+        {{with .Form.FieldErrors.image}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <input type="file" name="image_file" id="image_file" required>
+    </div>
+    <div>
+        <input type='submit' value='Publish recipe'>
+    </div>
+</form>
+{{end}}

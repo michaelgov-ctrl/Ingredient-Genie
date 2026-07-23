@@ -1,0 +1,17 @@
+{{define "title"}}Meal #{{.Meal.ID}}{{end}}
+
+{{define "main"}}
+    {{with .Meal}}
+    <div class='meal'>
+        <div class='metadata'>
+            <strong>{{.Title}}</strong>
+            <span>#{{.ID}}</span>
+        </div>
+        <pre><code>{{.Image}}</code></pre>
+        <div class='metadata'>
+            <time>Created: {{humanDate .Created}}</time>
+            <span>Version: {{.Version}}</span>
+        </div>
+    </div>
+    {{end}}
+{{end}}

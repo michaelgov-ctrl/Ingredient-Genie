@@ -5,8 +5,9 @@ import (
 )
 
 type MealsApi interface {
-	GetSortTypes() ([]SortType, error)
-	SearchByIngredients(IngredientMealSearchRequest) ([]MealResponse, Metadata, error)
+	GetMealList(s string) (MealListResponse, error)
+	GetSearchSortTypes() ([]SortType, error)
+	SearchByIngredients(IngredientMealSearchRequest) (MealSearchResponse, error)
 }
 
 type Models struct {
@@ -19,7 +20,7 @@ func NewModels(logger *slog.Logger, mealApiAddr string) Models {
 	}
 }
 
-type MealResponse struct {
+type MealMatch struct {
 	Meal                   Meal     `json:"meal"`
 	MissingIngredients     []string `json:"missingIngredients"`
 	MatchedIngredientCount int64    `json:"matchedIngredientCount"`
@@ -59,4 +60,14 @@ type Metadata struct {
 type IngredientMealSearchRequest struct {
 	Ingredients []string `json:"ingredients"`
 	Filters     Filters  `json:"filters"`
+}
+
+type MealListResponse struct {
+	Meals    []Meal
+	Metadata Metadata
+}
+
+type MealSearchResponse struct {
+	Meals    []MealMatch `json:"meals"`
+	Metadata Metadata    `json:"metadata"`
 }

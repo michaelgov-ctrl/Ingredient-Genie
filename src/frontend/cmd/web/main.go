@@ -4,8 +4,11 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"text/template"
 
 	"github.com/michaelgov-ctrl/Ingredient-Genie-frontend/internal/data"
+
+	"github.com/go-playground/form/v4"
 )
 
 type config struct {
@@ -15,9 +18,11 @@ type config struct {
 }
 
 type application struct {
-	config config
-	logger *slog.Logger
-	models data.Models
+	config        config
+	logger        *slog.Logger
+	models        data.Models
+	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 func main() {
@@ -32,10 +37,18 @@ func main() {
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
 	app := &application{
-		config: cfg,
-		logger: logger,
-		models: data.NewModels(logger, cfg.mealsApiUri),
+		config:        cfg,
+		logger:        logger,
+		models:        data.NewModels(logger, cfg.mealsApiUri),
+		templateCache: templateCache,
+		formDecoder:   form.NewDecoder(),
 	}
 
 	if err := app.serve(); err != nil {

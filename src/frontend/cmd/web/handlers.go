@@ -6,11 +6,50 @@ import (
 	"net/http"
 
 	"github.com/michaelgov-ctrl/Ingredient-Genie-frontend/internal/data"
+	"github.com/michaelgov-ctrl/Ingredient-Genie-frontend/internal/validator"
 )
 
-func (app *application) searchMealsByIngredientsHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
+	resp, err := app.models.Meals.GetMealList("")
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.Memes = resp.Meals
+	data.Metadata = resp.Metadata
+
+	app.render(w, r, http.StatusOK, "home.tmpl.html", data)
+}
+
+func (app *application) mealView(w http.ResponseWriter, r *http.Request) {
+	// TODO: do
+}
+
+func (app *application) mealCreate(w http.ResponseWriter, r *http.Request) {
+	// TODO: do
+}
+
+func (app *application) mealCreatePost(w http.ResponseWriter, r *http.Request) {
+	// TODO: do
+}
+
+type mealSearchForm struct {
+	Name                string        `form:"ingredients"`
+	Sort                data.SortType `form:"sort"`
+	validator.Validator `form:"-"`
+}
+
+func (app *application) searchMealsByIngredients(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	data.Form = mealSearchForm{}
+	app.render(w, r, http.StatusOK, "ingredientsearch.tmpl.html", data)
+}
+
+func (app *application) searchMealsByIngredientsPost(w http.ResponseWriter, r *http.Request) {
 	// gather sort types to populate form..
-	sortTypes, err := app.models.Meals.GetSortTypes()
+	sortTypes, err := app.models.Meals.GetSearchSortTypes()
 	if err != nil {
 		fmt.Fprint(w, err.Error())
 		return
@@ -28,23 +67,17 @@ func (app *application) searchMealsByIngredientsHandler(w http.ResponseWriter, r
 		},
 	}
 
-	meals, metadata, err := app.models.Meals.SearchByIngredients(req)
+	resp, err := app.models.Meals.SearchByIngredients(req)
 	if err != nil {
 		fmt.Fprint(w, err.Error())
 		return
 	}
 
-	mealsJson, err := json.Marshal(meals)
+	bytes, err := json.Marshal(resp.Meals)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 
-	metadataJson, err := json.Marshal(metadata)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	fmt.Fprint(w, string(mealsJson), string(metadataJson))
+	fmt.Fprint(w, string(bytes))
 }
