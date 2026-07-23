@@ -3,10 +3,9 @@ package data
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/michaelgov-ctrl/Ingredient-Genie-backend/internal/validator"
 )
 
 const (
@@ -163,6 +162,177 @@ func StringToSqlNullString(s string) sql.NullString {
 	}
 }
 
+func (m *MealModel) Get(ctx context.Context, id int64) (Meal, error) {
+	var sqlMeal SqlSafeMeal
+
+	mealQuery := `
+		SELECT
+			MealId,
+			Name,
+			AlternateName,
+			Category,
+			Area,
+			Country,
+			Instructions,
+			ThumbnailUrl,
+			YoutubeUrl,
+			SourceUrl
+		FROM Meal
+		WHERE MealId = ?`
+
+	err := m.DB.QueryRowContext(ctx, mealQuery, id).Scan(
+		&sqlMeal.ID,
+		&sqlMeal.Name,
+		&sqlMeal.AlternateName,
+		&sqlMeal.Category,
+		&sqlMeal.Area,
+		&sqlMeal.Country,
+		&sqlMeal.Instructions,
+		&sqlMeal.ThumbnailURL,
+		&sqlMeal.YoutubeURL,
+		&sqlMeal.SourceURL,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Meal{}, fmt.Errorf("record not found")
+		}
+
+		return Meal{}, fmt.Errorf("get meal: %w", err)
+	}
+
+	meal := sqlMeal.ToMeal()
+
+	ingredientsQuery := `
+		SELECT
+			i.IngredientId,
+			i.Name,
+			i.NormalizedName,
+			mi.Position,
+			mi.MeasureText
+		FROM MealIngredient AS mi
+		INNER JOIN Ingredient AS i
+			ON i.IngredientId = mi.IngredientId
+		WHERE mi.MealId = ?
+		ORDER BY mi.Position`
+
+	rows, err := m.DB.QueryContext(ctx, ingredientsQuery, id)
+	if err != nil {
+		return Meal{}, fmt.Errorf("get meal ingredients: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var ingredient MealIngredient
+		var name sql.NullString
+		var normalizedName sql.NullString
+		var measureText sql.NullString
+
+		err := rows.Scan(
+			&ingredient.IngredientID,
+			&name,
+			&normalizedName,
+			&ingredient.Position,
+			&measureText,
+		)
+		if err != nil {
+			return Meal{}, fmt.Errorf("scan meal ingredient: %w", err)
+		}
+
+		ingredient.Name = name.String
+		ingredient.NormalizedName = normalizedName.String
+		ingredient.MeasureText = measureText.String
+
+		meal.Ingredients = append(meal.Ingredients, ingredient)
+	}
+
+	if err := rows.Err(); err != nil {
+		return Meal{}, fmt.Errorf("iterate meal ingredients: %w", err)
+	}
+
+	return meal, nil
+}
+
+func (m *MealModel) GetAll(ctx context.Context, filters Filters) ([]Meal, Metadata, error) {
+	var totalRecords int
+
+	countQuery := fmt.Sprintf(`
+		SELECT COUNT(*)
+		FROM %s`,
+		MealsTable,
+	)
+
+	err := m.DB.QueryRowContext(ctx, countQuery).Scan(&totalRecords)
+	if err != nil {
+		return nil, Metadata{}, fmt.Errorf("count meals: %w", err)
+	}
+
+	query := fmt.Sprintf(`
+		SELECT
+			MealId,
+			Name,
+			AlternateName,
+			Category,
+			Area,
+			Country,
+			Instructions,
+			ThumbnailUrl,
+			YoutubeUrl,
+			SourceUrl
+		FROM %s
+		ORDER BY %s
+		LIMIT ? OFFSET ?`,
+		MealsTable,
+		filters.orderBy(),
+	)
+
+	rows, err := m.DB.QueryContext(
+		ctx,
+		query,
+		filters.limit(),
+		filters.offset(),
+	)
+	if err != nil {
+		return nil, Metadata{}, fmt.Errorf("get meals: %w", err)
+	}
+	defer rows.Close()
+
+	meals := make([]Meal, 0, filters.PageSize)
+
+	for rows.Next() {
+		var sqlMeal SqlSafeMeal
+
+		err := rows.Scan(
+			&sqlMeal.ID,
+			&sqlMeal.Name,
+			&sqlMeal.AlternateName,
+			&sqlMeal.Category,
+			&sqlMeal.Area,
+			&sqlMeal.Country,
+			&sqlMeal.Instructions,
+			&sqlMeal.ThumbnailURL,
+			&sqlMeal.YoutubeURL,
+			&sqlMeal.SourceURL,
+		)
+		if err != nil {
+			return nil, Metadata{}, fmt.Errorf("scan meal: %w", err)
+		}
+
+		meals = append(meals, sqlMeal.ToMeal())
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, Metadata{}, fmt.Errorf("iterate meals: %w", err)
+	}
+
+	metadata := calculateMetadata(
+		totalRecords,
+		filters.Page,
+		filters.PageSize,
+	)
+
+	return meals, metadata, nil
+}
+
 type MealMatch struct {
 	Meal                   Meal     `json:"meal"`
 	MissingIngredients     []string `json:"missingIngredients"`
@@ -195,17 +365,6 @@ func normalizeIngredientNames(ingredients []string) []string {
 	}
 
 	return normalized
-}
-
-func ValidateIngredientSearch(v *validator.Validator, ingredients []string) {
-	v.Check(len(ingredients) > 0, "ingredients", "must contain at least one ingredient")
-	v.Check(len(ingredients) <= 20, "ingredients", "must contain no more than 20 ingredients")
-
-	for _, ingredient := range ingredients {
-		ingredient = strings.TrimSpace(ingredient)
-		v.Check(ingredient != "", "ingredients", "must not contain empty values")
-		v.Check(len(ingredient) <= 100, "ingredients", "must not contain values longer than 100 characters")
-	}
 }
 
 func (m *MealModel) FindByIngredients(ctx context.Context, ingredients []string, filters Filters) ([]MealMatch, Metadata, error) {

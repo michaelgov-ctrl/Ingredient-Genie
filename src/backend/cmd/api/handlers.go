@@ -22,7 +22,72 @@ func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (app *application) searchMealsSortTypesHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) getMealHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		ID int64 `json:"id"`
+	}
+
+	if err := app.readJSON(w, r, &input); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+
+	v.Check(input.ID > 0, "id", "must be greater than 0")
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	meal, err := app.models.Meals.Get(ctx, input.ID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err := app.writeJSON(w, http.StatusOK, envelope{"meal": meal}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) listMealsHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		data.Filters `json:"filters"`
+	}
+
+	if err := app.readJSON(w, r, &input); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	meals, metadata, err := app.models.Meals.GetAll(ctx, input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"meals": meals, "metadata": metadata}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) mealSortTypesHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: this is probably a good reason sort options should be enums..
 	sortTypes, i := make([]string, len(data.MealSortStmts)), 0
 	for k := range data.MealSortStmts {
@@ -35,7 +100,7 @@ func (app *application) searchMealsSortTypesHandler(w http.ResponseWriter, r *ht
 	}
 }
 
-func (app *application) searchMealsByIngredientsHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) searchMealByIngredientsHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Ingredients  []string `json:"ingredients"`
 		data.Filters `json:"filters"`
@@ -58,7 +123,7 @@ func (app *application) searchMealsByIngredientsHandler(w http.ResponseWriter, r
 
 	v := validator.New()
 
-	if data.ValidateIngredientSearch(v, input.Ingredients); !v.Valid() {
+	if validator.ValidateIngredientSearch(v, input.Ingredients); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
@@ -71,14 +136,14 @@ func (app *application) searchMealsByIngredientsHandler(w http.ResponseWriter, r
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	meals, metadata, err := app.models.Meals.FindByIngredients(ctx, input.Ingredients, input.Filters)
+	mealMatches, metadata, err := app.models.Meals.FindByIngredients(ctx, input.Ingredients, input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
 	// fmt.Println(metadata, len(meals), "\n", meals[len(meals)-1])
-	if err := app.writeJSON(w, http.StatusOK, envelope{"metadata": metadata, "meals": meals}, nil); err != nil {
+	if err := app.writeJSON(w, http.StatusOK, envelope{"metadata": metadata, "mealMatches": mealMatches}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }

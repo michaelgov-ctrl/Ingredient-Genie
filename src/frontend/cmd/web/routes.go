@@ -13,8 +13,6 @@ func (app *application) routes() http.Handler {
 
 	mux.HandleFunc("GET /{$}", app.home)
 	mux.HandleFunc("GET /meal/view/{id}", app.mealView)
-	mux.HandleFunc("GET /meal/create", app.mealCreate)
-	mux.HandleFunc("POST /meal/create", app.mealCreatePost)
 	mux.HandleFunc("GET /meal/search", app.searchMealsByIngredients)
 	mux.HandleFunc("POST /meal/search", app.searchMealsByIngredientsPost)
 

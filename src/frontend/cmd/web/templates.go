@@ -1,9 +1,9 @@
 package main
 
 import (
+	"html/template"
 	"io/fs"
 	"path/filepath"
-	"text/template"
 	"time"
 
 	"github.com/michaelgov-ctrl/Ingredient-Genie-frontend/internal/data"
@@ -11,11 +11,13 @@ import (
 )
 
 type templateData struct {
-	Form      any
-	Meme      data.Meal
-	Memes     []data.Meal
-	Metadata  data.Metadata
-	CSRFToken string
+	Form        any
+	Meal        data.Meal
+	Meals       []data.Meal
+	MealMatches []data.MealMatch
+	Metadata    data.Metadata
+	SortTypes   []data.SortType
+	CSRFToken   string
 }
 
 func humanDate(t time.Time) string {
@@ -31,7 +33,7 @@ var functions = template.FuncMap{
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
-	var cache = make(map[string]*template.Template)
+	cache := make(map[string]*template.Template)
 
 	pages, err := fs.Glob(ui.Files, "html/pages/*.html")
 	if err != nil {

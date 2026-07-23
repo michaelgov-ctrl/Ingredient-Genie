@@ -5,8 +5,9 @@ import (
 )
 
 type MealsApi interface {
-	GetMealList(s string) (MealListResponse, error)
-	GetSearchSortTypes() ([]SortType, error)
+	GetMeal(int) (Meal, error)
+	GetMealList(Filters) (MealListResponse, error)
+	GetSortTypes() ([]SortType, error)
 	SearchByIngredients(IngredientMealSearchRequest) (MealSearchResponse, error)
 }
 
@@ -63,11 +64,11 @@ type IngredientMealSearchRequest struct {
 }
 
 type MealListResponse struct {
-	Meals    []Meal
-	Metadata Metadata
+	Meals    []Meal   `json:"meals"`
+	Metadata Metadata `json:"metadata"`
 }
 
 type MealSearchResponse struct {
-	Meals    []MealMatch `json:"meals"`
-	Metadata Metadata    `json:"metadata"`
+	MealMatches []MealMatch `json:"mealMatches"`
+	Metadata    Metadata    `json:"metadata"`
 }

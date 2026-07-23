@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
+	"html/template"
 	"log/slog"
 	"os"
-	"text/template"
 
 	"github.com/michaelgov-ctrl/Ingredient-Genie-frontend/internal/data"
 
