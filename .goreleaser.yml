@@ -7,6 +7,7 @@ builds:
     dir: ./src/frontend
     main: ./cmd/web
     binary: ingredient-genie-frontend
+    ldflags: -s -w
     env:
       - CGO_ENABLED=0
     goos:
@@ -21,6 +22,7 @@ builds:
     dir: ./src/backend
     main: ./cmd/api
     binary: ingredient-genie-backend
+    ldflags: -s -w
     env:
       - CGO_ENABLED=0
     goos:

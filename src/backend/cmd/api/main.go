@@ -14,7 +14,7 @@ type config struct {
 	port     int
 	logLevel string
 	db       struct {
-		dsn string
+		path string
 	}
 	limiter struct {
 		rps     float64
@@ -38,7 +38,7 @@ func main() {
 	flag.IntVar(&cfg.port, "port", 4269, "API server port")
 	flag.StringVar(&cfg.logLevel, "log-level", "error", "Logging level (trace|debug|info|warning|error)")
 
-	flag.StringVar(&cfg.db.dsn, "dsn", "internal/data/meals.sqlite", "DSN to connect to sqlite db")
+	flag.StringVar(&cfg.db.path, "db-path", "meals.sqlite", "relative path to sqlite db")
 
 	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 50, "Rate limiter maximum requests per second")
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 100, "Rate limiter maximum burst")
