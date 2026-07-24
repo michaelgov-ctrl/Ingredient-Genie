@@ -103,6 +103,10 @@ func openDB(cfg config) (*sql.DB, error) {
 		return nil, err
 	}
 
+	// TODO: check if path is relative or absolute
+	// if relative and is an end node (file) with no
+	// preceding directory, maybase assume it's in
+	// the same directory as this executable
 	db, err := sql.Open("sqlite", cfg.db.path)
 	if err != nil {
 		return nil, err
