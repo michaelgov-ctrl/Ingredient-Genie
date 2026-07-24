@@ -44,6 +44,11 @@ func NewMealsClient(logger *slog.Logger, addr string) MealsClient {
 	return client
 }
 
+func (mc MealsClient) CreateMeal(meal Meal) (int, error) {
+	// TODO: create meal return id as int to redirect to the /meal/view/{id}
+	return 0, nil
+}
+
 func (mc MealsClient) GetMeal(id int) (Meal, error) {
 	input := struct {
 		ID int `json:"id"`
@@ -87,6 +92,16 @@ func (mc MealsClient) GetMeal(id int) (Meal, error) {
 	}
 
 	return response.Meal, nil
+}
+
+func (mc MealsClient) UpdateMeal(meal Meal) error {
+	// TODO: send update request
+	return nil
+}
+
+func (mc MealsClient) DeleteMeal(id int) error {
+	// TODO: send delete request
+	return nil
 }
 
 func (mc MealsClient) GetMealList(filters Filters) (MealListResponse, error) {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -48,6 +49,27 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, http.StatusOK, "home.tmpl.html", templateData)
 }
 
+// TODO: display meal in a form
+type mealForm struct {
+	Meal                data.Meal `json:"meal"`
+	validator.Validator `form:"-"`
+}
+
+func (app *application) mealCreate(w http.ResponseWriter, r *http.Request) {
+	// TODO: parse mealForm
+}
+
+func (app *application) mealCreatePost(w http.ResponseWriter, r *http.Request) {
+	// TODO: send creation request
+	id, err := app.models.Meals.CreateMeal(data.Meal{})
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	fmt.Fprintf(w, "%d", id)
+}
+
 func (app *application) mealView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil || id < 1 {
@@ -70,6 +92,23 @@ func (app *application) mealView(w http.ResponseWriter, r *http.Request) {
 	templateData.Meal = meal
 
 	app.render(w, r, http.StatusOK, "view.tmpl.html", templateData)
+}
+
+func (app *application) mealUpdate(w http.ResponseWriter, r *http.Request) {
+	// TODO: Process meal form
+	// create meal return id as int to redirect to the /meal/view/{id}
+	if err := app.models.Meals.UpdateMeal(data.Meal{}); err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+}
+
+func (app *application) mealDelete(w http.ResponseWriter, r *http.Request) {
+	// TODO: process id
+	if err := app.models.Meals.DeleteMeal(0); err != nil {
+		app.serverError(w, r, err)
+		return
+	}
 }
 
 type mealSearchForm struct {

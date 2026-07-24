@@ -22,6 +22,30 @@ func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+func (app *application) createMealHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	var meal data.Meal
+	if err := app.readJSON(w, r, &meal); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+	// validate meal
+	_ = v
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	id, err := app.models.Meals.Create(ctx, meal)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, envelope{"id": id}, nil)
+}
+
 func (app *application) getMealHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		ID int64 `json:"id"`
@@ -51,6 +75,62 @@ func (app *application) getMealHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := app.writeJSON(w, http.StatusOK, envelope{"meal": meal}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) updateMealHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	var meal data.Meal
+	if err := app.readJSON(w, r, &meal); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+	v.Check(meal.ID > 0, "id", "must be greater than 0")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := app.models.Meals.Update(ctx, meal); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (app *application) deleteMealHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	var input struct {
+		ID int64 `json:"id"`
+	}
+
+	if err := app.readJSON(w, r, &input); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+	v.Check(input.ID > 0, "id", "must be greater than 0")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := app.models.Meals.Delete(ctx, input.ID); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (app *application) mealSortTypesHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO: this is probably a good reason sort options should be enums..
+	sortTypes, i := make([]string, len(data.MealSortStmts)), 0
+	for k := range data.MealSortStmts {
+		sortTypes[i] = k
+		i++
+	}
+
+	if err := app.writeJSON(w, http.StatusOK, envelope{"sortTypes": sortTypes}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
@@ -87,35 +167,12 @@ func (app *application) listMealsHandler(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-func (app *application) mealSortTypesHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: this is probably a good reason sort options should be enums..
-	sortTypes, i := make([]string, len(data.MealSortStmts)), 0
-	for k := range data.MealSortStmts {
-		sortTypes[i] = k
-		i++
-	}
-
-	if err := app.writeJSON(w, http.StatusOK, envelope{"sortTypes": sortTypes}, nil); err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
-
 func (app *application) searchMealByIngredientsHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Ingredients  []string `json:"ingredients"`
 		data.Filters `json:"filters"`
 	}
 
-	// extract necessary info like ingredients, page, page size, and sort from `r.Body`
-	// input.Ingredients = []string{
-	// 	"Garlic",
-	// 	"Red Onions",
-	// 	"Vegetable Oil",
-	// 	"Lime",
-	// }
-	// input.Filters.Page = 1
-	// input.Filters.PageSize = 10
-	// input.Filters.Sort = "-ratio"
 	if err := app.readJSON(w, r, &input); err != nil {
 		app.badRequestResponse(w, r, err)
 		return

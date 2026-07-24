@@ -5,7 +5,10 @@ import (
 )
 
 type MealsApi interface {
+	CreateMeal(Meal) (int, error)
 	GetMeal(int) (Meal, error)
+	UpdateMeal(Meal) error
+	DeleteMeal(int) error
 	GetMealList(Filters) (MealListResponse, error)
 	GetSortTypes() ([]SortType, error)
 	SearchByIngredients(IngredientMealSearchRequest) (MealSearchResponse, error)

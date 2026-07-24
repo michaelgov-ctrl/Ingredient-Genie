@@ -162,6 +162,11 @@ func StringToSqlNullString(s string) sql.NullString {
 	}
 }
 
+func (m *MealModel) Create(ctx context.Context, meal Meal) (int64, error) {
+	// TODO (int64, error) int64 is the id of the created meal
+	return 0, nil
+}
+
 func (m *MealModel) Get(ctx context.Context, id int64) (Meal, error) {
 	var sqlMeal SqlSafeMeal
 
@@ -250,6 +255,16 @@ func (m *MealModel) Get(ctx context.Context, id int64) (Meal, error) {
 	}
 
 	return meal, nil
+}
+
+func (m *MealModel) Update(ctx context.Context, meal Meal) error {
+	// TODO: actually update the meal
+	return nil
+}
+
+func (m *MealModel) Delete(ctx context.Context, id int64) error {
+	// TODO: delete it
+	return nil
 }
 
 func (m *MealModel) GetAll(ctx context.Context, filters Filters) ([]Meal, Metadata, error) {

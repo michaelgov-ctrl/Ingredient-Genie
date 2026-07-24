@@ -24,8 +24,12 @@ import (
 // # use iwr to check metadata
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
+
 	mux.HandleFunc("GET /v1/healthcheck", app.healthcheckHandler)
+	mux.HandleFunc("POST /v1/meals/create", app.createMealHandler)
 	mux.HandleFunc("POST /v1/meals/get", app.getMealHandler)
+	mux.HandleFunc("PUT /v1/meals/update", app.updateMealHandler)
+	mux.HandleFunc("DELETE /v1/meals/delete", app.deleteMealHandler)
 	mux.HandleFunc("GET /v1/meals/sort", app.mealSortTypesHandler)
 	mux.HandleFunc("POST /v1/meals/list", app.listMealsHandler)
 	mux.HandleFunc("POST /v1/meals/search", app.searchMealByIngredientsHandler)
